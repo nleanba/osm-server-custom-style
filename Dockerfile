@@ -131,20 +131,20 @@ RUN git clone --branch anchors-v4 https://github.com/imagico/mapnik.git mapnik -
   && export CXX="clang++" && export CC="clang" \
   && git submodule update --init
 RUN sudo apt install -y build-essential libssl-dev cimg-dev
-RUN wget https://github.com/Kitware/CMake/releases/download/v4.0.0/cmake-4.0.0-linux-x86_64.tar.gz \
-  && tar -zxvf cmake-4.0.0-linux-x86_64.tar.gz
+RUN wget https://github.com/Kitware/CMake/releases/download/v4.0.0/cmake-4.0.0-linux-aarch64.tar.gz \
+  && tar -zxvf cmake-4.0.0-linux-aarch64.tar.gz
 # RUN echo $PATH && ls / && which cmake && /cmake-4.0.0-linux-x86_64/bin/cmake --version
 RUN cd mapnik \
   && echo  CXX="clang++" && echo export CC="clang" \
   && echo mkdir /mapnik/build \
-  && /cmake-4.0.0-linux-x86_64/bin/cmake \
+  && /cmake-4.0.0-linux-aarch64/bin/cmake \
             -DBUILD_SHARED_LIBS:BOOL='ON' -DBUILD_DEMO_VIEWER=OFF \
             -DCMAKE_CXX_STANDARD=17  \
             -DUSE_MEMORY_MAPPED_FILE:BOOL='ON' \
             -LA --preset linux-gcc-release \
-  && /cmake-4.0.0-linux-x86_64/bin/cmake --build --parallel 8 --clean-first --preset linux-gcc-release \
+  && /cmake-4.0.0-linux-aarch64/bin/cmake --build --parallel 8 --clean-first --preset linux-gcc-release \
   && echo "BUILT"
-RUN /cmake-4.0.0-linux-x86_64/bin/cmake --install /mapnik/build
+RUN /cmake-4.0.0-linux-aarch64/bin/cmake --install /mapnik/build
 
 ### END MAPNIK BUILD
 
@@ -152,7 +152,7 @@ RUN /cmake-4.0.0-linux-x86_64/bin/cmake --install /mapnik/build
 # RUN npm install -g carto@1.2.0
 RUN git clone --branch xml-support --depth 2 https://github.com/imagico/carto.git \
 && git clone --branch anchors --depth 2 https://github.com/imagico/mapnik-reference.git \
-&& cd carto && npm install && npm install -g . 
+&& cd carto && npm install && npm install -g .
 
 ## Build renderd
 RUN export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc) \
@@ -161,16 +161,16 @@ RUN export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc) \
 && cd /tmp/mod_tile_src \
 && git clone --depth 1 https://github.com/openstreetmap/mod_tile.git . \
 && cd /tmp/mod_tile_build \
-&& /cmake-4.0.0-linux-x86_64/bin/cmake -B . -S /tmp/mod_tile_src \
+&& /cmake-4.0.0-linux-aarch64/bin/cmake -B . -S /tmp/mod_tile_src \
   -DCMAKE_BUILD_TYPE:STRING=Release \
   -DCMAKE_INSTALL_LOCALSTATEDIR:PATH=/var \
   -DCMAKE_INSTALL_PREFIX:PATH=/usr \
   -DCMAKE_INSTALL_RUNSTATEDIR:PATH=/run \
   -DCMAKE_INSTALL_SYSCONFDIR:PATH=/etc \
   -DENABLE_TESTS:BOOL=ON \
-&& /cmake-4.0.0-linux-x86_64/bin/cmake --build . \
+&& /cmake-4.0.0-linux-aarch64/bin/cmake --build . \
 && echo ctest \
-&& /cmake-4.0.0-linux-x86_64/bin/cmake --install . --strip
+&& /cmake-4.0.0-linux-aarch64/bin/cmake --install . --strip
 RUN sudo mkdir --parents /usr/share/renderd
 
 # Configure Apache

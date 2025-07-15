@@ -1,0 +1,3 @@
+[submodule "osm-carto-alternative-colors"]
+	path = osm-carto-alternative-colors
+	url = https://github.com/imagico/osm-carto-alternative-colors.git

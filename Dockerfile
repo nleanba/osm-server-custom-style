@@ -8,6 +8,7 @@ RUN apt-get update \
  ca-certificates gnupg lsb-release locales \
  wget curl \
  git-core unzip unrar \
+ inkscape imagemagick \
 && locale-gen $LANG && update-locale LANG=$LANG \
 && sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
 && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
@@ -65,7 +66,6 @@ RUN apt-get update \
  gdal-bin \
  liblua5.3-dev \
  lua5.3 \
- mapnik-utils \
  npm \
  osm2pgsql \
  osmium-tool \
@@ -75,12 +75,10 @@ RUN apt-get update \
  postgresql-$PG_VERSION-postgis-3-scripts \
  postgis \
  python-is-python3 \
- python3-mapnik \
  python3-lxml \
  python3-psycopg2 \
  python3-shapely \
  python3-pip \
- renderd \
  sudo \
  vim \
 && apt-get clean autoclean \
@@ -101,8 +99,79 @@ RUN pip3 install \
  osmium \
  pyyaml
 
+### CUSTOM MAPNIK BUILD
+# some of these may be redundant
+
+RUN apt install --no-install-recommends --yes \
+  apache2 \
+  apache2-dev \
+  curl \
+  g++ \
+  gcc \
+  git \
+  libcairo2-dev \
+  libcurl4-openssl-dev \
+  libglib2.0-dev \
+  libiniparser-dev \
+  zlib1g-dev clang make pkg-config curl \
+  libharfbuzz-dev libfreetype6 libfreetype6-dev \
+  libboost-dev libcairo-dev libcairo2-dev \
+  libboost-python-dev libboost-regex-dev libgdal-dev libboost-program-options-dev \
+  libboost-filesystem-dev libboost-system-dev libboost-thread-dev \
+  libboost-all-dev \
+  libjpeg-dev libwebp-dev \
+  libpng-dev \
+  libproj-dev \
+  libtiff-dev \
+  libsqlite3-dev libgmic-dev \
+  gperf libxxf86vm-dev ninja-build postgresql-client lcov autoconf-archive \
+  qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools
+RUN git clone --branch anchors-v4 https://github.com/imagico/mapnik.git mapnik --depth 10 \
+  && cd mapnik \
+  && export CXX="clang++" && export CC="clang" \
+  && git submodule update --init
+RUN sudo apt install -y build-essential libssl-dev cimg-dev
+RUN wget https://github.com/Kitware/CMake/releases/download/v4.0.0/cmake-4.0.0-linux-x86_64.tar.gz \
+  && tar -zxvf cmake-4.0.0-linux-x86_64.tar.gz
+# RUN echo $PATH && ls / && which cmake && /cmake-4.0.0-linux-x86_64/bin/cmake --version
+RUN cd mapnik \
+  && echo  CXX="clang++" && echo export CC="clang" \
+  && echo mkdir /mapnik/build \
+  && /cmake-4.0.0-linux-x86_64/bin/cmake \
+            -DBUILD_SHARED_LIBS:BOOL='ON' -DBUILD_DEMO_VIEWER=OFF \
+            -DCMAKE_CXX_STANDARD=17  \
+            -DUSE_MEMORY_MAPPED_FILE:BOOL='ON' \
+            -LA --preset linux-gcc-release \
+  && /cmake-4.0.0-linux-x86_64/bin/cmake --build --parallel 8 --clean-first --preset linux-gcc-release \
+  && echo "BUILT"
+RUN /cmake-4.0.0-linux-x86_64/bin/cmake --install /mapnik/build
+
+### END MAPNIK BUILD
+
 # Install carto for stylesheet
-RUN npm install -g carto@1.2.0
+# RUN npm install -g carto@1.2.0
+RUN git clone --branch xml-support --depth 2 https://github.com/imagico/carto.git \
+&& git clone --branch anchors --depth 2 https://github.com/imagico/mapnik-reference.git \
+&& cd carto && npm install && npm install -g . 
+
+## Build renderd
+RUN export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc) \
+&& rm -rf /tmp/mod_tile_src /tmp/mod_tile_build \
+&& mkdir /tmp/mod_tile_src /tmp/mod_tile_build \
+&& cd /tmp/mod_tile_src \
+&& git clone --depth 1 https://github.com/openstreetmap/mod_tile.git . \
+&& cd /tmp/mod_tile_build \
+&& /cmake-4.0.0-linux-x86_64/bin/cmake -B . -S /tmp/mod_tile_src \
+  -DCMAKE_BUILD_TYPE:STRING=Release \
+  -DCMAKE_INSTALL_LOCALSTATEDIR:PATH=/var \
+  -DCMAKE_INSTALL_PREFIX:PATH=/usr \
+  -DCMAKE_INSTALL_RUNSTATEDIR:PATH=/run \
+  -DCMAKE_INSTALL_SYSCONFDIR:PATH=/etc \
+  -DENABLE_TESTS:BOOL=ON \
+&& /cmake-4.0.0-linux-x86_64/bin/cmake --build . \
+&& echo ctest \
+&& /cmake-4.0.0-linux-x86_64/bin/cmake --install . --strip
+RUN sudo mkdir --parents /usr/share/renderd
 
 # Configure Apache
 RUN echo "LoadModule tile_module /usr/lib/apache2/modules/mod_tile.so" >> /etc/apache2/conf-available/mod_tile.conf \
@@ -128,7 +197,7 @@ RUN chmod +x /usr/bin/openstreetmap-tiles-update-expire.sh \
 && mkdir /var/log/tiles \
 && chmod a+rw /var/log/tiles \
 && ln -s /home/renderer/src/mod_tile/osmosis-db_replag /usr/bin/osmosis-db_replag \
-&& echo "* * * * *   renderer    openstreetmap-tiles-update-expire.sh\n" >> /etc/crontab
+&& echo "10 * * * *   renderer    openstreetmap-tiles-update-expire.sh\n" >> /etc/crontab
 
 # Configure PosgtreSQL
 COPY postgresql.custom.conf.tmpl /etc/postgresql/$PG_VERSION/main/
@@ -159,7 +228,12 @@ TILEDIR=/var/cache/renderd/tiles \n\
 XML=/home/renderer/src/openstreetmap-carto/mapnik.xml \n\
 HOST=localhost \n\
 TILESIZE=256 \n\
-MAXZOOM=20' >> /etc/renderd.conf \
+MAXZOOM=20\
+\
+[mapnik]\
+plugins_dir=/usr/lib/mapnik/input\
+font_dir=/data/style/fonts\
+font_dir_recurse=1' >> /etc/renderd.conf \' >> /etc/renderd.conf \
  && sed -i 's,/usr/share/fonts/truetype,/usr/share/fonts,g' /etc/renderd.conf
 
 # Install helper script

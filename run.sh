@@ -37,7 +37,9 @@ fi
 # carto build
 if [ ! -f /data/style/mapnik.xml ]; then
     cd /data/style/
-    carto ${NAME_MML:-project.mml} > mapnik.xml
+    carto ${NAME_MML:-project.mml} --file mapnik.xml
+    scripts/get-fonts.sh all
+    puts fonts in /data/style/fonts
 fi
 
 if [ "$1" == "import" ]; then
@@ -166,6 +168,42 @@ if [ "$1" == "run" ]; then
     service postgresql start
     service apache2 restart
     setPostgresPassword
+
+    # Run scripts from osm-carto-alternative-colors
+    cd /data/style
+    mkdir --parents symbols/pdf
+    chown -R renderer symbols
+    chmod -R a+rw symbols 
+    echo "python"
+    pip3 install Pillow colormath
+    sudo -u renderer scripts/generate_symbols.py
+    sudo -u renderer scripts/generate_symbols_labels.py # --inkscape
+    sudo -u renderer scripts/generate_line_patterns.py # --inkscape
+
+    ## i think? these need to be called only once, their output is preserved in /data/style
+    sudo -u renderer scripts/generate_unpaved_patterns.py # --inkscape
+
+    ## these idk
+    # # sudo -u renderer scripts/generate_line_widths.py
+    sudo -u renderer scripts/generate_patterns.py # --inkscape
+    # # sudo -u renderer scripts/generate_road_colours.py
+    # sudo -u renderer scripts/generate_shields.py
+    sudo -u renderer scripts/indexes.py
+
+    # sudo -u renderer psql -d gis -c "CREATE TABLE carto_anchors"
+
+    # Run sql scripts for osm-carto-alternative-colors
+    echo "adding SQL functions"
+    sudo -u renderer psql -d gis -f sql/ac-light.sql
+    sudo -u renderer psql -d gis -f sql/indexes.sql
+    sudo -u renderer psql -d gis -f sql/line-widths-generated.sql
+    sudo -u renderer psql -d gis -f sql/map_functions.sql
+    sudo -u renderer psql -d gis -f sql/names.sql
+    sudo -u renderer psql -d gis -f sql/roads.sql
+    sudo -u renderer psql -d gis -f sql/symbols.sql
+    sudo -u renderer psql -d gis -f sql/z.sql
+
+    sudo -u renderer /data/style/scripts/get-external-data.py
 
     # Configure renderd threads
     sed -i -E "s/num_threads=[0-9]+/num_threads=${THREADS:-4}/g" /etc/renderd.conf

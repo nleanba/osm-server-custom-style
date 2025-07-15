@@ -2,13 +2,23 @@ version: '3'
 
 services:
   map:
-    image: overv/openstreetmap-tile-server
+    build: .
+    environment:
+      # REPLICATION_URL: https://planet.osm.ch/replication/hour/
+      MAX_INTERVAL_SECONDS: "3600"
+      UPDATES: enabled
+      DOWNLOAD_PBF: https://download.geofabrik.de/europe/switzerland-latest.osm.pbf
+      DOWNLOAD_POLY: https://download.geofabrik.de/europe/switzerland.poly
     volumes:
+      - osm-tiles:/data/tiles/
       - osm-data:/data/database/
+      - ./osm-carto-alternative-colors:/data/style/
     ports:
       - "8080:80"
     command: "run"
 
 volumes:
   osm-data:
+    external: true
+  osm-tiles:
     external: true

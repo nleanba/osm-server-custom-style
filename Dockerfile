@@ -228,12 +228,12 @@ TILEDIR=/var/cache/renderd/tiles \n\
 XML=/home/renderer/src/openstreetmap-carto/mapnik.xml \n\
 HOST=localhost \n\
 TILESIZE=256 \n\
-MAXZOOM=20\
-\
-[mapnik]\
-plugins_dir=/usr/lib/mapnik/input\
-font_dir=/data/style/fonts\
-font_dir_recurse=1' >> /etc/renderd.conf \' >> /etc/renderd.conf \
+MAXZOOM=20 \n\
+\n \
+[mapnik] \n\
+plugins_dir=/usr/lib/mapnik/input \n\
+font_dir=/data/style/fonts \n\
+font_dir_recurse=1 \n' >> /etc/renderd.conf \' >> /etc/renderd.conf \
  && sed -i 's,/usr/share/fonts/truetype,/usr/share/fonts,g' /etc/renderd.conf
 
 # Install helper script

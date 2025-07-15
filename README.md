@@ -10,7 +10,7 @@ This container allows you to easily set up an OpenStreetMap PNG tile server give
 First create a Docker volume to hold the PostgreSQL database that will contain the OpenStreetMap data:
 ```sh
 docker volume create osm-data
-docker volume create osm-data
+docker volume create osm-tiles
 ```
 
 Then, import the data:

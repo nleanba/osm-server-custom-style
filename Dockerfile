@@ -184,7 +184,7 @@ RUN ln -sf /dev/stdout /var/log/apache2/access.log \
 # leaflet
 COPY leaflet-demo.html /var/www/html/index.html
 RUN cd /var/www/html/ \
-&& wget https://github.com/Leaflet/Leaflet/releases/download/v1.8.0/leaflet.zip \
+&& wget https://github.com/Leaflet/Leaflet/releases/download/v1.9.4/leaflet.zip \
 && unzip leaflet.zip \
 && rm leaflet.zip
 
@@ -240,6 +240,9 @@ font_dir_recurse=1' >> /etc/renderd.conf \' >> /etc/renderd.conf \
 COPY --from=compiler-helper-script /home/renderer/src/regional /home/renderer/src/regional
 
 COPY --from=compiler-stylesheet /root/openstreetmap-carto /home/renderer/src/openstreetmap-carto-backup
+
+# apt install imagemagick 6.9 which doesn't yet have the unified "magick" command
+RUN ln -s /usr/bin/convert /usr/bin/magick
 
 # Start running
 COPY run.sh /

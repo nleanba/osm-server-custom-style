@@ -38,8 +38,8 @@ fi
 if [ ! -f /data/style/mapnik.xml ]; then
     cd /data/style/
     carto ${NAME_MML:-project.mml} --file mapnik.xml
-    scripts/get-fonts.sh all
-    puts fonts in /data/style/fonts
+    # scripts/get-fonts.sh all
+    ## puts fonts in /data/style/fonts
 fi
 
 if [ "$1" == "import" ]; then

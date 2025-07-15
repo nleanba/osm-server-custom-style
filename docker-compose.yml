@@ -4,7 +4,7 @@ services:
   map:
     build: .
     environment:
-      # REPLICATION_URL: https://planet.osm.ch/replication/hour/
+      REPLICATION_URL: https://planet.osm.ch/replication/hour/
       MAX_INTERVAL_SECONDS: "3600"
       UPDATES: enabled
       DOWNLOAD_PBF: https://download.geofabrik.de/europe/switzerland-latest.osm.pbf

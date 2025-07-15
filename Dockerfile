@@ -231,7 +231,7 @@ TILESIZE=256 \n\
 MAXZOOM=20 \n\
 \n \
 [mapnik] \n\
-plugins_dir=/usr/lib/mapnik/input \n\
+# plugins_dir=/usr/lib/mapnik/input \n\
 font_dir=/data/style/fonts \n\
 font_dir_recurse=1 \n' >> /etc/renderd.conf \
  && sed -i 's,/usr/share/fonts/truetype,/usr/share/fonts,g' /etc/renderd.conf

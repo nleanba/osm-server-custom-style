@@ -8,7 +8,7 @@ RUN apt-get update \
  ca-certificates gnupg lsb-release locales \
  wget curl \
  git-core unzip unrar \
- inkscape imagemagick \
+ inkscape imagemagick librsvg2-bin \
 && locale-gen $LANG && update-locale LANG=$LANG \
 && sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
 && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
@@ -243,6 +243,8 @@ COPY --from=compiler-stylesheet /root/openstreetmap-carto /home/renderer/src/ope
 
 # apt install imagemagick 6.9 which doesn't yet have the unified "magick" command
 RUN ln -s /usr/bin/convert /usr/bin/magick
+# fix renderd not finding libmapnik.so
+RUN ldconfig
 
 # Start running
 COPY run.sh /

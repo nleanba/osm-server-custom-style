@@ -194,6 +194,8 @@ if [ "$1" == "run" ]; then
 
     # Run sql scripts for osm-carto-alternative-colors
     echo "adding SQL functions"
+    sudo -u renderer psql -d gis -f sql/z.sql
+    sudo -u renderer psql -d gis -f sql/z_order.sql
     sudo -u renderer psql -d gis -f sql/ac-light.sql
     sudo -u renderer psql -d gis -f sql/indexes.sql
     sudo -u renderer psql -d gis -f sql/line-widths-generated.sql
@@ -201,7 +203,6 @@ if [ "$1" == "run" ]; then
     sudo -u renderer psql -d gis -f sql/names.sql
     sudo -u renderer psql -d gis -f sql/roads.sql
     sudo -u renderer psql -d gis -f sql/symbols.sql
-    sudo -u renderer psql -d gis -f sql/z.sql
 
     sudo -u renderer /data/style/scripts/get-external-data.py
 

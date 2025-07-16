@@ -57,16 +57,39 @@
             zoomControl: false,
         });
 
-        L.tileLayer('/tile/{z}/{x}/{y}.png',{
+
+        L.control.zoom({position: "topright"}).addTo(map);
+        L.control.scale({imperial: false}).addTo(map);
+        L.control.locate({showPopup: false,position: "topright"}).addTo(map);
+
+        const layerAC=L.tileLayer('/tile/{z}/{x}/{y}.png',{
             maxZoom: 20,
             minZoom: 8,
             // detectRetina: true,
             attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA</a> | Map Style &copy; <a href="https://github.com/imagico/osm-carto-alternative-colors">OSM-Carto Alternative Colors</a> contributors <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA</a>',
             id: 'base'
-        }).addTo(map);
-        L.control.zoom({position: "topright"}).addTo(map);
-        L.control.scale({imperial: false}).addTo(map);
-        L.control.locate({showPopup: false,position: "topright"}).addTo(map);
+        });
+        layerAC.addTo(map);
+
+        const layerSWISSIMAGE=L.tileLayer('https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{z}/{x}/{y}.jpeg',{
+            maxZoom: 20,
+            minZoom: 8,
+            // detectRetina: true,
+            attribution: 'Areal Imagery &copy; <a href="https://www.swisstopo.admin.ch">Federal Office of Topography swisstopo</a>',
+            id: 'swissimage'
+        });
+
+        var baseLayers={
+            "AC Carto": layerAC,
+            "SWISSIMAGE": layerSWISSIMAGE,
+        };
+
+        var overlays={};
+        L.control.layers(
+            baseLayers,
+            overlays,
+            {position: "bottomright"}
+        ).addTo(map);
 
         L.easyButton({
             id: 'edit-button',  // an id for the generated button

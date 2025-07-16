@@ -27,6 +27,12 @@ docker compose up -d
 
 ----
 
+### !!
+
+This requires some modifications to the style to work, I haven’t yet figured out how to share them here.
+
+----
+
 Next, download an `.osm.pbf` extract from geofabrik.de for the region that you're interested in. You can then start importing it into PostgreSQL by running a container and mounting the file as `/data/region.osm.pbf`. For example:
 
 ```

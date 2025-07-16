@@ -5,14 +5,15 @@ services:
     build: .
     environment:
       REPLICATION_URL: https://planet.osm.ch/replication/hour/
-      MAX_INTERVAL_SECONDS: "3600"
+      MAX_INTERVAL_SECONDS: "3500"
       UPDATES: enabled
-      DOWNLOAD_PBF: https://download.geofabrik.de/europe/switzerland-latest.osm.pbf
-      DOWNLOAD_POLY: https://download.geofabrik.de/europe/switzerland.poly
+      DOWNLOAD_PBF: https://planet.osm.ch/switzerland-padded.osm.pbf
+      DOWNLOAD_POLY: https://planet.osm.ch/switzerland-padded.poly
     volumes:
       - osm-tiles:/data/tiles/
       - osm-data:/data/database/
       - ./osm-carto-alternative-colors:/data/style/
+      - ./html:/data/html/
     ports:
       - "8080:80"
     command: "run"

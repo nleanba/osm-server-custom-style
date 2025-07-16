@@ -182,12 +182,12 @@ RUN ln -sf /dev/stdout /var/log/apache2/access.log \
 && ln -sf /dev/stderr /var/log/apache2/error.log
 
 # leaflet
-COPY leaflet-demo.html /var/www/html/index.html
-RUN cd /var/www/html/ \
-&& wget https://github.com/Leaflet/Leaflet/releases/download/v1.9.4/leaflet.zip \
-&& unzip leaflet.zip \
-&& rm leaflet.zip \
-&& mv dist/* . && rm -rf dist
+# COPY leaflet-demo.html /var/www/html/index.html
+# RUN cd /var/www/html/ \
+# && wget https://github.com/Leaflet/Leaflet/releases/download/v1.9.4/leaflet.zip \
+# && unzip leaflet.zip \
+# && rm leaflet.zip \
+# && mv dist/* . && rm -rf dist
 
 # Icon
 RUN wget -O /var/www/html/favicon.ico https://www.openstreetmap.org/favicon.ico
@@ -211,6 +211,7 @@ RUN chown -R postgres:postgres /var/lib/postgresql \
 RUN mkdir -p /run/renderd/ \
   &&  mkdir  -p  /data/database/  \
   &&  mkdir  -p  /data/style/  \
+  &&  mkdir  -p  /data/html/  \
   &&  mkdir  -p  /home/renderer/src/  \
   &&  chown  -R  renderer:  /data/  \
   &&  chown  -R  renderer:  /home/renderer/src/  \
@@ -218,9 +219,10 @@ RUN mkdir -p /run/renderd/ \
   &&  mv  /var/lib/postgresql/$PG_VERSION/main/  /data/database/postgres/  \
   &&  mv  /var/cache/renderd/tiles/            /data/tiles/     \
   &&  chown  -R  renderer: /data/tiles \
-  &&  ln  -s  /data/database/postgres  /var/lib/postgresql/$PG_VERSION/main             \
+  &&  ln  -s  /data/database/postgres  /var/lib/postgresql/$PG_VERSION/main    \
   &&  ln  -s  /data/style              /home/renderer/src/openstreetmap-carto  \
   &&  ln  -s  /data/tiles              /var/cache/renderd/tiles                \
+  &&  ln  -s  /data/html               /var/www/html/                          \
 ;
 
 RUN echo '[default] \n\

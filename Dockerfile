@@ -190,7 +190,8 @@ RUN ln -sf /dev/stdout /var/log/apache2/access.log \
 # && mv dist/* . && rm -rf dist
 
 # Icon
-RUN wget -O /var/www/html/favicon.ico https://www.openstreetmap.org/favicon.ico
+RUN echo "please use cutom icon"
+# wget -O /var/www/html/favicon.ico https://www.openstreetmap.org/favicon.ico
 
 # Copy update scripts
 COPY openstreetmap-tiles-update-expire.sh /usr/bin/
@@ -222,7 +223,7 @@ RUN mkdir -p /run/renderd/ \
   &&  ln  -s  /data/database/postgres  /var/lib/postgresql/$PG_VERSION/main    \
   &&  ln  -s  /data/style              /home/renderer/src/openstreetmap-carto  \
   &&  ln  -s  /data/tiles              /var/cache/renderd/tiles                \
-  &&  ln  -s  /data/html               /var/www/html                           \
+  &&  ln  -s --force /data/html        /var/www/html \
 ;
 
 RUN echo '[default] \n\

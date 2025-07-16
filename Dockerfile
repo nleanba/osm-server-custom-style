@@ -223,7 +223,7 @@ RUN mkdir -p /run/renderd/ \
   &&  ln  -s  /data/database/postgres  /var/lib/postgresql/$PG_VERSION/main    \
   &&  ln  -s  /data/style              /home/renderer/src/openstreetmap-carto  \
   &&  ln  -s  /data/tiles              /var/cache/renderd/tiles                \
-  &&  ln  -s --force /data/html        /var/www/html \
+  && rm -r /var/www/html && ln --symbolic --no-target-directory /data/html /var/www/html \
 ;
 
 RUN echo '[default] \n\

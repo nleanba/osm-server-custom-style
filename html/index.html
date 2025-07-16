@@ -75,12 +75,20 @@
             map.setView([46.898,8.282],8);
         }
 
-        map.addEventListener("move",e => {
-            // console.log("moved", e);
+        function debounce(fn,wait=200) {
+            let timeout=null;
+            return (...e) => {
+                clearTimeout(timeout);
+                timeout=setTimeout(() => {timeout=null; fn(...e);},wait);
+            };
+        }
+
+        map.addEventListener("move", debounce(e => {
+            console.log("moved", e);
             const {lat,lng}=map.getCenter();
             const zoom=map.getZoom();
             history.replaceState(null,"",baseurl+`#map=${zoom}/${Math.round(lat*10000)/10000}/${Math.round(lng*10000)/10000}`);
-        })
+        }))
     </script>
 </body>
 

@@ -11,6 +11,7 @@
     <script src="leaflet-1.9.4/leaflet.js"></script>
     <link rel="stylesheet" href="leaflet-locatecontrol-0.84.2/L.Control.Locate.min.css" />
     <script src="leaflet-locatecontrol-0.84.2/L.Control.Locate.min.js" charset="utf-8"></script>
+    <script src="Leaflet.EasyButton.js" charset="utf-8"></script>
 
     <style>
         html,
@@ -28,7 +29,7 @@
         }
 
         header {
-            padding: 8px;
+            /* padding: 8px; */
             display: flex;
             gap: 8px;
             justify-content: space-between;
@@ -42,17 +43,19 @@
 
 <body>
     <header>
-        <a href="https://nleanba.ch/"><img width="88" height="31" alt="[nleanba.ch]"
+        <!-- <a href="https://nleanba.ch/"><img width="88" height="31" alt="[nleanba.ch]"
                 src="https://nleanba.ch/88x31/nleanba-badge.png"></a>
         <a href="https://www.openstreetmap.org/"><img width="88" height="31" alt="[OpenStreetMap]"
-                src="https://nleanba.ch/88x31/nleanba-openstreetmap.png"></a>
+                src="https://nleanba.ch/88x31/nleanba-openstreetmap.png"></a> -->
     </header>
     <main>
         <div id="map"></div>
     </main>
 
     <script>
-        var map=L.map('map');
+        var map=L.map('map',{
+            zoomControl: false,
+        });
 
         L.tileLayer('/tile/{z}/{x}/{y}.png',{
             maxZoom: 20,
@@ -61,8 +64,47 @@
             attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA</a> | Map Style &copy; <a href="https://github.com/imagico/osm-carto-alternative-colors">OSM-Carto Alternative Colors</a> contributors <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA</a>',
             id: 'base'
         }).addTo(map);
+        L.control.zoom({position: "topright"}).addTo(map);
         L.control.scale({imperial: false}).addTo(map);
-        L.control.locate({showPopup: false}).addTo(map);
+        L.control.locate({showPopup: false,position: "topright"}).addTo(map);
+
+        L.easyButton({
+            id: 'edit-button',  // an id for the generated button
+            position: 'topright',      // inherited from L.Control -- the corner it goes in
+            type: 'replace',          // set to animate when you're comfy with css
+            leafletClasses: true,     // use leaflet classes to style the button?
+            states: [{                 // specify different icons and responses for your button
+                // stateName: 'get-center',
+                // onClick: function(button,map) {
+                //     const {lat,lng}=map.getCenter();
+                //     const zoom=map.getZoom();
+                //     this.location = `https://www.openstreetmap.org/edit#map=${zoom}/${lat}/${lng}`
+                // },
+                title: 'Edit on openstreetmap.org',
+                icon: '<span>iD</span>'
+            }],
+            tagName: 'a',
+        }).addTo(map);
+        const editLink=document.getElementById('edit-button');
+
+        L.easyButton({
+            id: 'nleanba-button',  // an id for the generated button
+            position: 'topleft',      // inherited from L.Control -- the corner it goes in
+            type: 'replace',          // set to animate when you're comfy with css
+            leafletClasses: true,     // use leaflet classes to style the button?
+            states: [{                 // specify different icons and responses for your button
+                // stateName: 'get-center',
+                // onClick: function(button,map) {
+                //     const {lat,lng}=map.getCenter();
+                //     const zoom=map.getZoom();
+                //     this.location = `https://www.openstreetmap.org/edit#map=${zoom}/${lat}/${lng}`
+                // },
+                title: 'nleanba.ch',
+                icon: '<img alt="nleanba.ch" src="https://nleanba.ch/img/logo.svg">'
+            }],
+            tagName: 'a',
+            href: "https://nleanba.ch",
+        }).addTo(map);
 
         const baseurl=window.location.origin+window.location.pathname+window.location.search;
 
@@ -75,6 +117,15 @@
             map.setView([46.898,8.282],8);
         }
 
+        function locationChanged() {
+            const {lat,lng}=map.getCenter();
+            const zoom=map.getZoom();
+            history.replaceState(null,"",baseurl+`#map=${zoom}/${Math.round(lat*10000)/10000}/${Math.round(lng*10000)/10000}`);
+            editLink.href=`https://www.openstreetmap.org/edit#map=${zoom}/${lat}/${lng}`;
+        }
+
+        locationChanged();
+
         function debounce(fn,wait=200) {
             let timeout=null;
             return (...e) => {
@@ -83,12 +134,7 @@
             };
         }
 
-        map.addEventListener("move", debounce(e => {
-            console.log("moved", e);
-            const {lat,lng}=map.getCenter();
-            const zoom=map.getZoom();
-            history.replaceState(null,"",baseurl+`#map=${zoom}/${Math.round(lat*10000)/10000}/${Math.round(lng*10000)/10000}`);
-        }))
+        map.addEventListener("move",debounce(locationChanged))
     </script>
 </body>
 

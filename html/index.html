@@ -105,12 +105,11 @@
             type: 'replace',          // set to animate when you're comfy with css
             leafletClasses: true,     // use leaflet classes to style the button?
             states: [{                 // specify different icons and responses for your button
-                // stateName: 'get-center',
-                // onClick: function(button,map) {
-                //     const {lat,lng}=map.getCenter();
-                //     const zoom=map.getZoom();
-                //     this.location = `https://www.openstreetmap.org/edit#map=${zoom}/${lat}/${lng}`
-                // },
+                onClick: function(button,map) {
+                    const {lat,lng}=map.getCenter();
+                    const zoom=map.getZoom();
+                    window.location = `https://www.openstreetmap.org/edit#map=${zoom}/${lat}/${lng}`
+                },
                 title: 'Edit on openstreetmap.org',
                 icon: '<span>iD</span>'
             }],
@@ -124,12 +123,6 @@
             type: 'replace',          // set to animate when you're comfy with css
             leafletClasses: true,     // use leaflet classes to style the button?
             states: [{                 // specify different icons and responses for your button
-                // stateName: 'get-center',
-                // onClick: function(button,map) {
-                //     const {lat,lng}=map.getCenter();
-                //     const zoom=map.getZoom();
-                //     this.location = `https://www.openstreetmap.org/edit#map=${zoom}/${lat}/${lng}`
-                // },
                 title: 'nleanba.ch',
                 icon: '<img alt="nleanba.ch" src="https://nleanba.ch/img/logo.svg">'
             }],
